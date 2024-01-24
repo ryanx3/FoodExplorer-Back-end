@@ -2,7 +2,7 @@ exports.up = (knex) =>
   knex.schema.createTable("dishes", (table) => {
     table.increments("id").primary();
 
-    table.text("image").notNullable();
+    table.text("image");
     table.text("name").notNullable().unique();
     table.text("category").notNullable();
     table.text("description").notNullable();

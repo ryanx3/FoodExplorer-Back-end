@@ -4,24 +4,24 @@ const knex = require("../database/knex");
 class DishesController {
   async create(req, res) {
     try {
-      const { title, category, description, price, ingredients } = req.body;
+      const { name, category, description, price, ingredients } = req.body;
       const { admin_id } = req.params;
 
       const database = await sqliteConnection();
 
       const userIsAdmin = await database.get(
-        "SELECT * FROM users WHERE id = ? AND (isAdmin = 1 OR isAdmin IS NULL)",
+        "SELECT isAdmin FROM users WHERE id = ? AND (isAdmin = 0 OR isAdmin IS NULL)",
         [admin_id]
       );
-      if (!userIsAdmin) {
+      if (userIsAdmin) {
         throw new AppError("Apenas administradores podem criar um prato.", 404);
       }
 
-      const titleExists = await database.get(
-        "SELECT * FROM dishes WHERE title = (?)",
-        [title]
+      const nameExists = await database.get(
+        "SELECT * FROM dishes WHERE name = (?)",
+        [name]
       );
-      if (titleExists) {
+      if (nameExists) {
         throw new AppError("O nome deste prato já existe.");
       }
 
@@ -30,27 +30,25 @@ class DishesController {
       }
 
       const [dish_id] = await knex("dishes").insert({
-        title,
+        name,
         category,
         description,
         price,
         created_by: admin_id,
       });
 
-      const ingredientsInsert = ingredients.map((name) => {
+      const ingredientsInsert = ingredients.map((ingredient) => {
         return {
           dish_id,
-          name,
+          ingredient,
           created_by: admin_id,
         };
       });
 
       await knex("ingredients").insert(ingredientsInsert);
-      await knex("ingredients");
       res.status(200).json("Prato criado!");
     } catch (error) {
-      console.error("Erro ao criar este prato.", error);
-      throw new AppError(error.message || "Erro ao criar este prato.");
+      throw new AppError("Erro ao criar este prato.");
     }
   }
 
@@ -75,7 +73,6 @@ class DishesController {
       throw new AppError(error.message || "Erro ao atualizar este prato.");
     }
   }
-
   async delete(req, res) {}
 }
 
