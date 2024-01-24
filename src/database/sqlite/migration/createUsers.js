@@ -5,9 +5,10 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR,
     password VARCHAR,
     avatar VARCHAR NULL,
+    isAdmin BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )
+)
 `;
 
 module.exports = createUsers;

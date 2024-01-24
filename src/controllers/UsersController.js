@@ -4,7 +4,7 @@ const { hash, compare } = require("bcryptjs");
 
 class UsersController {
   async create(req, res) {
-    const { name, email, password } = req.body;
+    const { name, email, password, isAdmin } = req.body;
 
     const database = await sqliteConnection();
     const emailExists = await database.get(
@@ -18,10 +18,11 @@ class UsersController {
 
     const hashedPassword = await hash(password, 8);
 
-    database.run("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", [
+    database.run("INSERT INTO users (name, email, password, isAdmin) VALUES (?, ?, ?, ?)", [
       name,
       email,
       hashedPassword,
+      isAdmin
     ]);
 
     res.status(201).json("Usuário cadastrado!");
