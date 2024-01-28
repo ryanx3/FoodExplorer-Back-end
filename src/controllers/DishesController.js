@@ -1,22 +1,14 @@
 const AppError = require("../utils/AppError");
 const sqliteConnection = require("../database/sqlite");
 const knex = require("../database/knex");
+
 class DishesController {
   async create(req, res) {
     try {
       const { name, category, description, price, ingredients } = req.body;
-      const { admin_id } = req.params;
+      const { user_id } = req.params;
 
       const database = await sqliteConnection();
-
-      const userIsAdmin = await database.get(
-        "SELECT isAdmin FROM users WHERE id = ? AND (isAdmin = 0 OR isAdmin IS NULL)",
-        [admin_id]
-      );
-      if (userIsAdmin) {
-        throw new AppError("Apenas administradores podem criar um prato.", 404);
-      }
-
       const nameExists = await database.get(
         "SELECT * FROM dishes WHERE name = (?)",
         [name]
@@ -24,8 +16,8 @@ class DishesController {
       if (nameExists) {
         throw new AppError("O nome deste prato já existe.");
       }
-
-      if (isNaN(price) || price <= 0) {
+      const isNotANumber = isNaN(price) || price <= 0;
+      if (isNotANumber) {
         throw new AppError("Preço inválido.");
       }
 
@@ -34,38 +26,132 @@ class DishesController {
         category,
         description,
         price,
-        created_by: admin_id,
+        user_id,
       });
 
       const ingredientsInsert = ingredients.map((ingredient) => {
         return {
           dish_id,
           ingredient,
-          created_by: admin_id,
+          user_id,
         };
       });
 
-      await knex("ingredients").insert(ingredientsInsert);
-      res.status(200).json("Prato criado!");
+      await knex("ingredients").where({ dish_id }).insert(ingredientsInsert);
+
+      return res.json("Prato Criado");
     } catch (error) {
-      throw new AppError("Erro ao criar este prato.");
+      throw new AppError(error.message || "Erro ao criar este prato.");
     }
   }
 
-  async show(req, res) {}
+  async show(req, res) {
+    try {
+      const { dish_id } = req.params;
+
+      const dish = await knex("dishes").where({ id: dish_id }).first();
+      const ingredients = await knex("ingredients")
+        .where({ dish_id })
+        .orderBy("ingredient");
+
+      if (!dish) {
+        throw new AppError("Prato não encontrado.", 404);
+      }
+
+      return res.json({
+        ...dish,
+        ingredients,
+      });
+    } catch (error) {
+      throw new AppError("Erro ao mostrar o prato.");
+    }
+  }
+
+  async delete(req, res) {
+    const { dish_id } = req.params;
+    await knex("dishes").where({ id: dish_id }).delete();
+
+    return res.json("Prato excluído!");
+  }
+
+  async index(req, res) {
+    const { user_id, name, ingredients } = req.query;
+
+    let dishes;
+
+    if (ingredients) {
+      const filterIngredients = ingredients
+        .split(",")
+        .map((ingredient) => ingredient.trim());
+
+      dishes = await knex("ingredients")
+        .select(["dishes.id", "dishes.name", "dishes.user_id"])
+        .where("dishes.user_id", user_id)
+        .whereLike("dishes.name", `%${name}%`)
+        .whereIn("ingredient", filterIngredients)
+        .innerJoin("dishes", "dishes.id", "ingredients.dish_id");
+    } else {
+      dishes = await knex("dishes")
+        .where({ user_id })
+        .whereLike("name", `%${name}%`)
+        .orderBy("name");
+    }
+
+    const userIngredients = await knex("ingredients").where({ user_id });
+
+    const dishWithIngredients = dishes.map((dish) => {
+      const dishIngredients = userIngredients.filter(
+        (ingredient) => ingredient.dish_id === dish.id
+      );
+
+      return {
+        ...dish,
+        ingredients: dishIngredients,
+      };
+    });
+
+    return res.json(dishWithIngredients);
+  }
 
   async update(req, res) {
     try {
       const { name, category, description, price, ingredients } = req.body;
-      const { admin_id } = req.params;
+      const { dish_id } = req.params;
+
       const database = await sqliteConnection();
 
-      const user = await database.get("SELECT * FROM users WHERE id = (?)", [
-        admin_id,
-      ]);
-      if (!user) {
-        throw new AppError("Usuário não encontrado.", 404);
+      const nameExists = await database.get(
+        "SELECT * FROM dishes WHERE name = (? )AND id <> (?)",
+        [name, dish_id]
+      );
+      if (nameExists) {
+        throw new AppError("O nome deste prato já existe.");
       }
+
+      const user = await knex("dishes")
+        .where({ id: dish_id })
+        .select("user_id")
+        .first();
+
+      await knex("dishes").where({ id: dish_id }).update({
+        name,
+        category,
+        description,
+        price,
+        user_id: user.user_id,
+      });
+
+      await knex("ingredients").where({ dish_id }).del();
+
+      const newIngredientsInsert = ingredients.map((ingredient) => {
+        return {
+          dish_id,
+          ingredient,
+          user_id: user.user_id,
+        };
+      });
+
+      await knex("ingredients").insert(newIngredientsInsert);
 
       res.status(200).json("Prato atualizado!");
     } catch (error) {
@@ -73,7 +159,6 @@ class DishesController {
       throw new AppError(error.message || "Erro ao atualizar este prato.");
     }
   }
-  async delete(req, res) {}
 }
 
 module.exports = DishesController;
