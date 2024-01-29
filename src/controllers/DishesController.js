@@ -139,6 +139,7 @@ class DishesController {
         description,
         price,
         user_id: user.user_id,
+        updated_by: user.user_id
       });
 
       await knex("ingredients").where({ dish_id }).del();
