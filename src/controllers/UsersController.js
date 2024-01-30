@@ -25,7 +25,7 @@ class UsersController {
       isAdmin
     ]);
 
-    res.status(201).json("Usuário cadastrado!");
+    return res.status(201).json("Usuário cadastrado!");
   }
 
   async update(req, res) {
@@ -76,7 +76,7 @@ class UsersController {
       [user.name, user.email, user.password, id]
     );
 
-    res.status(200).json("Usuário atualizado!");
+    return res.status(200).json("Usuário atualizado!");
   }
 }
 
