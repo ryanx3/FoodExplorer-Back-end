@@ -154,7 +154,7 @@ class DishesController {
 
       await knex("ingredients").insert(newIngredientsInsert);
 
-      res.status(200).json("Prato atualizado!");
+      return res.status(200).json("Prato atualizado!");
     } catch (error) {
       console.error("Erro ao atualizar este prato.", error);
       throw new AppError(error.message || "Erro ao atualizar este prato.");
