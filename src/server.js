@@ -3,8 +3,12 @@ require("express-async-errors");
 const AppError = require("./utils/AppError");
 const express = require("express");
 const app = express();
+ 
+const uploadConfig = require("./configs/upload")
 
-app.use(express.json()); //Para a api saber qual o padrão vamos utilizar para enviar infos que no caso é o json.
+app.use(express.json()); 
+
+app.use("/files", express.static(uploadConfig.UPLOAD_FOLDERS))
 
 const routes = require("./routes");
 const migrationsRun = require("../src/database/sqlite/migration");

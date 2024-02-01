@@ -6,7 +6,7 @@ class DishesController {
   async create(req, res) {
     try {
       const { name, category, description, price, ingredients } = req.body;
-      const { user_id } = req.params;
+      const user_id  = req.user.id;
 
       const database = await sqliteConnection();
       const nameExists = await database.get(
@@ -21,7 +21,7 @@ class DishesController {
         throw new AppError("Preço inválido.");
       }
 
-      const [dish_id] = await knex("dishes").insert({
+      const [ dish_id ] = await knex("dishes").insert({
         name,
         category,
         description,
@@ -75,7 +75,8 @@ class DishesController {
   }
 
   async index(req, res) {
-    const { user_id, name, ingredients } = req.query;
+    const { name, ingredients } = req.query;
+    const user_id = req.user.id
 
     let dishes;
 
