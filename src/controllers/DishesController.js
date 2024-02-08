@@ -6,7 +6,7 @@ class DishesController {
   async create(req, res) {
     try {
       const { name, category, description, price, ingredients } = req.body;
-      const user_id  = req.user.id;
+      const user_id = req.user.id;
 
       const database = await sqliteConnection();
       const nameExists = await database.get(
@@ -16,12 +16,13 @@ class DishesController {
       if (nameExists) {
         throw new AppError("O nome deste prato já existe.");
       }
-      const isNotANumber = isNaN(price) || price <= 0;
+      
+      const isNotANumber = isNaN(parseFloat(price)) || parseFloat(price) <= 0;
       if (isNotANumber) {
         throw new AppError("Preço inválido.");
       }
 
-      const [ dish_id ] = await knex("dishes").insert({
+      const [dish_id] = await knex("dishes").insert({
         name,
         category,
         description,
@@ -76,7 +77,7 @@ class DishesController {
 
   async index(req, res) {
     const { name, ingredients } = req.query;
-    const user_id = req.user.id
+    const user_id = req.user.id;
 
     let dishes;
 
@@ -140,7 +141,7 @@ class DishesController {
         description,
         price,
         user_id: user.user_id,
-        updated_by: user.user_id
+        updated_by: user.user_id,
       });
 
       await knex("ingredients").where({ dish_id }).del();

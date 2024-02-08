@@ -18,12 +18,10 @@ class UsersController {
 
     const hashedPassword = await hash(password, 8);
 
-    database.run("INSERT INTO users (name, email, password, isAdmin) VALUES (?, ?, ?, ?)", [
-      name,
-      email,
-      hashedPassword,
-      isAdmin
-    ]);
+    database.run(
+      "INSERT INTO users (name, email, password, isAdmin) VALUES (?, ?, ?, ?)",
+      [name, email, hashedPassword, isAdmin]
+    );
 
     return res.status(201).json("Usuário cadastrado!");
   }
@@ -33,7 +31,9 @@ class UsersController {
     const user_id = req.user.id;
 
     const database = await sqliteConnection();
-    const user = await database.get("SELECT * FROM users WHERE id = (?)", [user_id]);
+    const user = await database.get("SELECT * FROM users WHERE id = (?)", [
+      user_id,
+    ]);
 
     if (!user) {
       throw new AppError("Usuário não encontrado.", 404);

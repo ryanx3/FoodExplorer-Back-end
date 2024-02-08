@@ -4,10 +4,10 @@ class IngredientsController {
     async index(req, res) {
         const  user_id  = req.user.id;
 
-        const ingredients = await knex("ingredients").where({ user_id })
+        const ingredients = await knex("ingredients").where({ user_id }).groupBy("ingredient")
 
         return res.json(ingredients)
     }
 }
 
-module.exports = IngredientsController 
+module.exports = IngredientsController  
