@@ -13,7 +13,7 @@ const filesController = new FilesController();
 const upload = multer(uploadConfig.MULTER);
 
 dishesRouter.use(ensureAuthenticated);
-dishesRouter.post("/", dishesController.create);
+dishesRouter.post("/", upload.single("image"), dishesController.create);
 dishesRouter.get("/:dish_id", dishesController.show);
 dishesRouter.delete("/:dish_id", dishesController.delete);
 dishesRouter.put("/:dish_id", dishesController.update);

@@ -37,7 +37,6 @@ class FilesController {
 
     const dish = await knex("dishes").where({ id: dish_id }).first();
 
-
     if (!dish) {
       throw new AppError("Este prato não existe.");
     }
