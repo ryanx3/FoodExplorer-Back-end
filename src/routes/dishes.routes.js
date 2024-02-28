@@ -18,10 +18,5 @@ dishesRouter.get("/:dish_id", dishesController.show);
 dishesRouter.delete("/:dish_id", dishesController.delete);
 dishesRouter.put("/:dish_id", dishesController.update);
 dishesRouter.get("/", dishesController.index);
-dishesRouter.patch(
-  "/image/:dish_id",
-  upload.single("image"),
-  filesController.updateDishImage
-);
 
 module.exports = dishesRouter;

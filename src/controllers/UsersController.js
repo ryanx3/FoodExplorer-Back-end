@@ -61,7 +61,7 @@ class UsersController {
         throw new AppError("A senha antiga não confere.", 401);
       }
       user.password = await hash(password, 8);
-    } //Importante estar dentro de um if para não precisar atualizar tudo de uma vez, name, email e password
+    }
 
     user.name = name ?? user.name;
     user.email = email ?? user.email;

@@ -28,11 +28,6 @@ class DishesController {
         throw new AppError("O nome deste prato já existe.");
       }
 
-      const isNotANumber = isNaN(parseFloat(price)) || parseFloat(price) <= 0;
-      if (isNotANumber) {
-        throw new AppError("Preço inválido.");
-      }
-
       if (!req.file) {
         throw new AppError("Imagem não encontrada.");
       }
@@ -139,7 +134,7 @@ class DishesController {
       const database = await sqliteConnection();
 
       const nameExists = await database.get(
-        "SELECT * FROM dishes WHERE name = (? )AND id <> (?)",
+        "SELECT * FROM dishes WHERE name = ( ? )AND id <> (?)",
         [name, dish_id]
       );
       if (nameExists) {
