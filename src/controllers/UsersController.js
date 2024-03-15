@@ -27,7 +27,7 @@ class UsersController {
   }
 
   async update(req, res) {
-    const { name, email, old_password, password } = req.body;
+    const { name, email, old_password, password, cep, street, neighborhood, number_home } = req.body;
     const user_id = req.user.id;
 
     const database = await sqliteConnection();
@@ -63,6 +63,10 @@ class UsersController {
       user.password = await hash(password, 8);
     }
 
+    if(cep && !number_home) {
+      throw new AppError("Informe o número da sua residência.", 401);
+    }
+
     user.name = name ?? user.name;
     user.email = email ?? user.email;
 
@@ -71,9 +75,13 @@ class UsersController {
     name = ?,
     email = ?,
     password = ?,
+    CEP = ?,
+    street = ?,
+    neighborhood = ?,
+    number_home = ?,
     updated_at = DATETIME('now')
     WHERE id = ?`,
-      [user.name, user.email, user.password, user_id]
+      [user.name, user.email, user.password,cep, street, neighborhood, number_home, user_id]
     );
 
     return res.status(200).json("Usuário atualizado!");
