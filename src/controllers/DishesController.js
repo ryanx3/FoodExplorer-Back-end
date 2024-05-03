@@ -16,8 +16,8 @@ class DishesController {
 
       const database = await sqliteConnection();
 
-      if(!req.file ) {
-      throw new AppError("Selecione uma imagem para o seu prato.")
+      if (!req.file) {
+        throw new AppError("Selecione uma imagem para o seu prato.");
       }
 
       const nameExists = await database.get(
@@ -98,14 +98,12 @@ class DishesController {
         .map((ingredient) => ingredient.trim());
 
       dishes = await knex("ingredients")
-        .select(["dishes.id", "dishes.name", "dishes.user_id"])
-        .where("dishes.user_id", user_id)
+        .select(["dishes.id", "dishes.name"])
         .whereLike("dishes.name", `%${name}%`)
         .whereIn("ingredient", filterIngredients)
         .innerJoin("dishes", "dishes.id", "ingredients.dish_id");
     } else {
       dishes = await knex("dishes")
-        .where({ user_id })
         .whereLike("name", `%${name}%`)
         .orderBy("name");
     }
@@ -128,13 +126,22 @@ class DishesController {
 
   async update(req, res) {
     try {
-      const { name, category, description, price, ingredients } = req.body;
+      const {
+        name,
+        category,
+        description,
+        price,
+        newIngredients,
+        ingredientsExists,
+      } = req.body;
       const { dish_id } = req.params;
 
       const database = await sqliteConnection();
 
+      console.log("Nome do prato:", name);
+      console.log("ID do prato:", dish_id);
       const nameExists = await database.get(
-        "SELECT * FROM dishes WHERE name = ( ? )AND id <> (?)",
+        "SELECT * FROM dishes WHERE name = ( ? ) AND id <> (?)",
         [name, dish_id]
       );
       if (nameExists) {
@@ -147,22 +154,28 @@ class DishesController {
         .first();
 
       await knex("dishes").where({ id: dish_id }).update({
-        name,
-        category,
-        description,
-        price,
+        name: name,
+        category: category,
+        description: description,
+        price: price,
         user_id: user.user_id,
         updated_by: user.user_id,
       });
 
       await knex("ingredients").where({ dish_id }).del();
 
-      const newIngredientsInsert = ingredients.map((ingredient) => {
-        return {
-          dish_id,
-          ingredient,
-          user_id: user.user_id,
-        };
+      const allIngredients = [...ingredientsExists, ...newIngredients];
+
+      const newIngredientsInsert = allIngredients.map((ingredient) => {
+        if (typeof ingredient === "string") {
+          return {
+            dish_id,
+            ingredient,
+            user_id: user.user_id,
+          };
+        } else {
+          return ingredient;
+        }
       });
 
       await knex("ingredients").insert(newIngredientsInsert);

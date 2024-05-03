@@ -7,8 +7,6 @@ const multer = require("multer");
 const DishesController = require("../controllers/DishesController");
 const dishesController = new DishesController();
 const ensureAuthenticated = require("../middlewares/ensureAuthenticated");
-const FilesController = require("../controllers/FilesController");
-const filesController = new FilesController();
 
 const upload = multer(uploadConfig.MULTER);
 
