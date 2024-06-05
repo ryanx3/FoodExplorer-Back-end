@@ -34,11 +34,21 @@ class FilesController {
       const { dish_id } = req.params;
       const imageFilename = req.file.filename;
 
+      const dish = await knex("dishes").where({ id: dish_id }).first();
+
+      if (!dish) {
+        return res.status(404).json({ error: "Prato não encontrado." });
+      }
+
+      if (dish.image) {
+        await diskStorage.deleteFile(dish.image);
+      }
+
       const diskStorage = new DiskStorage();
       const filename = await diskStorage.saveFile(imageFilename);
 
-      await knex("dishes").where({ id: dish_id }).insert({ image: filename });
-
+      await knex("dishes").where({ id: dish_id }).update({ image: filename });
+      
       return res.json({ image: filename });
     } catch (error) {
       return res.status(500).json({ error: "Erro ao enviar a imagem." });
