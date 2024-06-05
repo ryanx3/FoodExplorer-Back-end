@@ -1,4 +1,3 @@
-const { diskStorage } = require("multer");
 const knex = require("../database/knex");
 const DiskStorage = require("../providers/DiskStorage");
 const AppError = require("../utils/AppError");
@@ -34,6 +33,7 @@ class FilesController {
       const { dish_id } = req.params;
       const imageFilename = req.file.filename;
 
+      const diskStorage = new DiskStorage();
       const dish = await knex("dishes").where({ id: dish_id }).first();
 
       if (!dish) {
@@ -44,14 +44,13 @@ class FilesController {
         await diskStorage.deleteFile(dish.image);
       }
 
-      const diskStorage = new DiskStorage();
       const filename = await diskStorage.saveFile(imageFilename);
 
       await knex("dishes").where({ id: dish_id }).update({ image: filename });
       
       return res.json({ image: filename });
     } catch (error) {
-      return res.status(500).json({ error: "Erro ao enviar a imagem." });
+      throw new AppError("Erro ao atualizar imagem.");
     }
   }
 }
