@@ -81,3 +81,4 @@ class FavoritesController {
   }
 }
 
+module.exports = FavoritesController
