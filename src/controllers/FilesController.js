@@ -29,29 +29,20 @@ class FilesController {
     return res.json(user);
   }
 
-  async updateDishImage(req, res) {
-    const { dish_id } = req.params;
-    const imageFilename = req.file.filename;
+  async UpdateDishImage(req, res) {
+    try {
+      const { dish_id } = req.params;
+      const imageFilename = req.file.filename;
 
-    const diskStorage = new DiskStorage();
+      const diskStorage = new DiskStorage();
+      const filename = await diskStorage.saveFile(imageFilename);
 
-    const dish = await knex("dishes").where({ id: dish_id }).first();
+      await knex("dishes").where({ id: dish_id }).insert({ image: filename });
 
-    if (!dish) {
-      throw new AppError("Este prato não existe.");
+      return res.json({ image: filename });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao enviar a imagem." });
     }
-
-    if (dish.image) {
-      await diskStorage.deleteFile(imageFilename);
-    }
-
-    const image = await diskStorage.saveFile(imageFilename);
-
-    dish.image = image;
-
-    await knex("dishes").where({ id: dish_id }).update(dish);
-
-    return res.json({ dish });
   }
 }
 

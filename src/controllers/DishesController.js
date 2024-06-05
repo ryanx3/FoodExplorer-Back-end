@@ -1,43 +1,22 @@
 const AppError = require("../utils/AppError");
 const sqliteConnection = require("../database/sqlite");
 const knex = require("../database/knex");
-const DiskStorage = require("../providers/DiskStorage");
 
 class DishesController {
   async create(req, res) {
     try {
       const { name, category, description, price, ingredients } = req.body;
       const user_id = req.user.id;
-      const image = req.file.filename;
-
-      const diskStorage = new DiskStorage();
-      const filename = await diskStorage.saveFile(image);
-      const ingredientsArray = JSON.parse(ingredients || "[]");
-
-      const database = await sqliteConnection();
-
-      if (!req.file) {
-        throw new AppError("Selecione uma imagem para o seu prato.");
-      }
-
-      const nameExists = await database.get(
-        "SELECT * FROM dishes WHERE name = (?)",
-        [name]
-      );
-      if (nameExists) {
-        throw new AppError("O nome deste prato já existe.");
-      }
 
       const [dish_id] = await knex("dishes").insert({
         name,
         category,
         description,
         price,
-        image: filename,
-        user_id,
+        user_id
       });
 
-      const ingredientsInsert = ingredientsArray.map((ingredient) => {
+      const ingredientsInsert = ingredients.map((ingredient) => {
         return {
           dish_id,
           ingredient,
@@ -45,11 +24,11 @@ class DishesController {
         };
       });
 
-      await knex("ingredients").where({ dish_id }).insert(ingredientsInsert);
+      await knex("ingredients").insert(ingredientsInsert);
 
-      return res.json({ message: "Prato Criado com sucesso!", id: dish_id });
+      return res.json({ message: "Prato criado com sucesso!", id: dish_id });
     } catch (error) {
-      throw new AppError(error.message || "Erro ao criar este prato.");
+      throw new AppError(error.message || "Erro ao criar o prato.");
     }
   }
 
