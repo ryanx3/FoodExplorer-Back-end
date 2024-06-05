@@ -28,10 +28,6 @@ class DishesController {
         throw new AppError("O nome deste prato já existe.");
       }
 
-      if (!req.file) {
-        throw new AppError("Imagem não encontrada.");
-      }
-
       const [dish_id] = await knex("dishes").insert({
         name,
         category,
@@ -51,7 +47,7 @@ class DishesController {
 
       await knex("ingredients").where({ dish_id }).insert(ingredientsInsert);
 
-      return res.json("Prato Criado");
+      return res.json({ message: "Prato Criado com sucesso!", id: dish_id });
     } catch (error) {
       throw new AppError(error.message || "Erro ao criar este prato.");
     }

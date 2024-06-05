@@ -63,8 +63,8 @@ class UsersController {
       user.password = await hash(password, 8);
     }
 
-    if(cep && !number_home) {
-      throw new AppError("Informe o número da sua residência.", 401);
+    if(cep && !number_home || !cep && number_home || !street || !neighborhood) {
+      throw new AppError("Preencha todos os campos do seu endereço.", 401);
     }
 
     user.name = name ?? user.name;
