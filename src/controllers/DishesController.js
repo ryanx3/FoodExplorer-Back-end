@@ -13,7 +13,7 @@ class DishesController {
         category,
         description,
         price,
-        user_id
+        user_id,
       });
 
       const ingredientsInsert = ingredients.map((ingredient) => {
@@ -113,14 +113,17 @@ class DishesController {
 
       const database = await sqliteConnection();
 
-      console.log("Nome do prato:", name);
-      console.log("ID do prato:", dish_id);
       const nameExists = await database.get(
         "SELECT * FROM dishes WHERE name = ( ? ) AND id <> (?)",
         [name, dish_id]
       );
+
       if (nameExists) {
         throw new AppError("O nome deste prato já existe.");
+      }
+
+      if (price <= 0) {
+        throw new AppError("Insira um preço válido.");
       }
 
       const user = await knex("dishes")
@@ -140,6 +143,12 @@ class DishesController {
       await knex("ingredients").where({ dish_id }).del();
 
       const allIngredients = [...ingredientsExists, ...newIngredients];
+
+      if (allIngredients.length === 0) {
+        throw new AppError(
+          "Por favor, insira pelo menos um ingrediente do seu prato."
+        );
+      }
 
       const newIngredientsInsert = allIngredients.map((ingredient) => {
         if (typeof ingredient === "string") {
