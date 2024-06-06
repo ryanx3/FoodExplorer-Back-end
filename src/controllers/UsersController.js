@@ -4,7 +4,7 @@ const { hash, compare } = require("bcryptjs");
 
 class UsersController {
   async create(req, res) {
-    const { name, email, password, isAdmin } = req.body;
+    const { name, email, password } = req.body;
 
     const database = await sqliteConnection();
     const emailExists = await database.get(
@@ -19,15 +19,15 @@ class UsersController {
     const hashedPassword = await hash(password, 8);
 
     database.run(
-      "INSERT INTO users (name, email, password, isAdmin) VALUES (?, ?, ?, ?)",
-      [name, email, hashedPassword, isAdmin]
+      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+      [name, email, hashedPassword]
     );
 
     return res.status(201).json("Usuário cadastrado!");
   }
 
   async update(req, res) {
-    const { name, email, old_password, password, cep, street, neighborhood, number_home } = req.body;
+    const { name, email, old_password, password } = req.body;
     const user_id = req.user.id;
 
     const database = await sqliteConnection();
@@ -63,10 +63,6 @@ class UsersController {
       user.password = await hash(password, 8);
     }
 
-    if(cep && !number_home || !cep && number_home || !street || !neighborhood) {
-      throw new AppError("Preencha todos os campos do seu endereço.", 401);
-    }
-
     user.name = name ?? user.name;
     user.email = email ?? user.email;
 
@@ -75,13 +71,9 @@ class UsersController {
     name = ?,
     email = ?,
     password = ?,
-    CEP = ?,
-    street = ?,
-    neighborhood = ?,
-    number_home = ?,
     updated_at = DATETIME('now')
     WHERE id = ?`,
-      [user.name, user.email, user.password,cep, street, neighborhood, number_home, user_id]
+      [user.name, user.email, user.password, user_id]
     );
 
     return res.status(200).json("Usuário atualizado!");

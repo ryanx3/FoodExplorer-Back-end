@@ -5,11 +5,6 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR,
     password VARCHAR,
     avatar VARCHAR NULL,
-    CEP INTEGER NULL,
-    street VARCHAR NULL,
-    neighborhood VARCHAR NULL,
-    number_home INTEGER NULL,
-    isAdmin BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
