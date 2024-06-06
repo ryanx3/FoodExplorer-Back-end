@@ -1,11 +1,10 @@
-const Router = require("express")
+const { Router } = require("express");
+const ingredientsRouter = Router();
 
-const ingredientsRouter = Router()
+const IngredientsController = require("../controllers/IngredientsController");
+const ingredientsController = new IngredientsController();
+const ensureAuthenticated = require("../middlewares/ensureAuthenticated");
 
-const IngredientsController = require("../controllers/IngredientsController")
-const ingredientsController = new IngredientsController()
-const ensureAuthenticated = require("../middlewares/ensureAuthenticated")
+ingredientsRouter.get("/", ensureAuthenticated, ingredientsController.index);
 
-ingredientsRouter.get("/", ensureAuthenticated, ingredientsController.index)
-
-module.exports = ingredientsRouter
+module.exports = ingredientsRouter;

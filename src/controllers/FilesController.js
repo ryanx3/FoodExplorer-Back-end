@@ -28,7 +28,7 @@ class FilesController {
     return res.json(user);
   }
 
-  async UpdateDishImage(req, res) {
+  async updateDishImage(req, res) {
     try {
       const { dish_id } = req.params;
       const imageFilename = req.file.filename;

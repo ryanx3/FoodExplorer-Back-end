@@ -1,4 +1,4 @@
-const Router = require("express");
+const { Router } = require("express");
 const dishesRouter = Router();
 
 const uploadConfig = require("../configs/upload");
@@ -22,7 +22,7 @@ dishesRouter.get("/", dishesController.index);
 dishesRouter.patch(
   "/:dish_id/image",
   upload.single("image"),
-  filesController.UpdateDishImage
+  filesController.updateDishImage
 );
 
 module.exports = dishesRouter;
