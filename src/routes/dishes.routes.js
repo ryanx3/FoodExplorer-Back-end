@@ -6,14 +6,14 @@ const multer = require("multer");
 
 const DishesController = require("../controllers/DishesController");
 const dishesController = new DishesController();
-const ensureAuthenticated = require("../middlewares/ensureAuthenticated");
 const FilesController = require("../controllers/FilesController");
 const filesController = new FilesController();
 
 const upload = multer(uploadConfig.MULTER);
 
-dishesRouter.use(ensureAuthenticated);
+const ensureAuthenticated = require("../middlewares/ensureAuthenticated");
 
+dishesRouter.use(ensureAuthenticated);
 dishesRouter.post("/", dishesController.create);
 dishesRouter.get("/:dish_id", dishesController.show);
 dishesRouter.delete("/:dish_id", dishesController.delete);
