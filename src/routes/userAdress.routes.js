@@ -7,5 +7,6 @@ const userAdressController = new UserAdressController();
 const ensureAuthenticated = require("../middlewares/ensureAuthenticated");
 
 routerUserAdress.put("/", ensureAuthenticated, userAdressController.update);
+routerUserAdress.get("/", ensureAuthenticated, userAdressController.index);
 
 module.exports = routerUserAdress;

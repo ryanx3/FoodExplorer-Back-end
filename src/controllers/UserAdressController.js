@@ -1,3 +1,4 @@
+const knex = require("../database/knex");
 const sqliteConnection = require("../database/sqlite");
 const AppError = require("../utils/AppError");
 
@@ -40,6 +41,13 @@ class UserAdressController {
     }
 
     return res.status(200).json("Endereço atualizado!");
+  }
+
+  async index(req, res) {
+    const user_id = req.user.id;
+
+    const address = await knex("userAdress").where({ user_id }).first();
+    res.json(address);
   }
 }
 
