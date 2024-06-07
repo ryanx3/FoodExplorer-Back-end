@@ -47,13 +47,30 @@ class FavoritesController {
     const user_id = req.user.id;
 
     try {
-      const favoriteDishes = await knex("favorites")
+      const AllCustomerFavoriteDishes = await knex("favorites")
         .join("dishes", "favorites.dish_id", "dishes.id")
         .where("favorites.user_id", user_id)
         .select("dishes.*");
 
-      return res.json(favoriteDishes);
+      return res.json(AllCustomerFavoriteDishes);
     } catch (error) {
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+
+  async show(req, res) {
+    try {
+      const topFavoriteDishes = await knex("favorites")
+        .join("dishes", "favorites.dish_id", "dishes.id")
+        .select("dishes.id", "dishes.name")
+        .count("favorites.dish_id as favorites_count")
+        .groupBy("dishes.id", "dishes.name")
+        .orderBy("favorites_count", "desc")
+        .limit(5);
+
+      return res.json(topFavoriteDishes);
+    } catch (error) {
+      console.error(error.message);
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
