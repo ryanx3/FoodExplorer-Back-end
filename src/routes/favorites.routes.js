@@ -11,4 +11,4 @@ favoritesRouter.post("/:dish_id", favoritesController.create);
 favoritesRouter.delete("/:dish_id", favoritesController.delete);
 favoritesRouter.get("/", favoritesController.index);
 
-module.exports = favoritesRouter
+module.exports = favoritesRouter;

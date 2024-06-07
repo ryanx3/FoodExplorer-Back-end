@@ -11,6 +11,7 @@ class FavoritesController {
         dish_id,
         user_id,
       });
+
       if (!id) {
         throw new AppError("Não foi possível favoritar o prato", 401);
       }
@@ -18,7 +19,7 @@ class FavoritesController {
       return res.json("Prato favoritado com sucesso!");
     } catch (error) {
       console.error(error.message);
-      return res.status(500).json({ error: "Erro interno do servidor" });
+      return res.status(500).json("Erro interno do servidor");
     }
   }
 
@@ -45,41 +46,17 @@ class FavoritesController {
   async index(req, res) {
     const user_id = req.user.id;
 
-    if (role === "customer") {
-      const usersFavoriteDishes = await knex("favorites").where({
-        user_id,
-      });
+    try {
+      const favoriteDishes = await knex("favorites")
+        .join("dishes", "favorites.dish_id", "dishes.id")
+        .where("favorites.user_id", user_id)
+        .select("dishes.*");
 
-      if (usersFavoriteDishes) {
-        return res.json(usersFavoriteDishes);
-      } else {
-        throw new AppError("Não foi possível localizar os pratos favoritos");
-      }
-    } else {
-      const dishesFavorites = await knex("favorites").orderBy("dish_id");
-
-      const count = {};
-      dishesFavorites.forEach((object) => {
-        const dish_id = object.dish_id;
-
-        if (count[dish_id]) {
-          count[dish_id].amount++;
-        } else {
-          count[dish_id] = {
-            ...object,
-            amount: 1,
-          };
-        }
-      });
-
-      const newArray = Object.values(count).map((item) => item);
-
-      if (!newArray) {
-        throw new AppError("Não foi possível localizar os pratos favoritos");
-      }
-      return res.json(newArray);
+      return res.json(favoriteDishes);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
 }
 
-module.exports = FavoritesController
+module.exports = FavoritesController;
