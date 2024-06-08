@@ -32,71 +32,11 @@ class DishesController {
     }
   }
 
-  async show(req, res) {
-    try {
-      const { dish_id } = req.params;
-
-      const dish = await knex("dishes").where({ id: dish_id }).first();
-      const ingredients = await knex("ingredients")
-        .where({ dish_id })
-        .orderBy("ingredient");
-
-      if (!dish) {
-        throw new AppError("Prato não encontrado.", 404);
-      }
-
-      return res.json({
-        ...dish,
-        ingredients,
-      });
-    } catch (error) {
-      throw new AppError("Erro ao mostrar o prato.");
-    }
-  }
-
   async delete(req, res) {
     const { dish_id } = req.params;
     await knex("dishes").where({ id: dish_id }).delete();
 
     return res.json("Prato excluído!");
-  }
-
-  async index(req, res) {
-    const { name, ingredients } = req.query;
-    const user_id = req.user.id;
-
-    let dishes;
-
-    if (ingredients) {
-      const filterIngredients = ingredients
-        .split(",")
-        .map((ingredient) => ingredient.trim());
-
-      dishes = await knex("ingredients")
-        .select(["dishes.id", "dishes.name"])
-        .whereLike("dishes.name", `%${name}%`)
-        .whereIn("ingredient", filterIngredients)
-        .innerJoin("dishes", "dishes.id", "ingredients.dish_id");
-    } else {
-      dishes = await knex("dishes")
-        .whereLike("name", `%${name}%`)
-        .orderBy("name");
-    }
-
-    const userIngredients = await knex("ingredients").where({ user_id });
-
-    const dishWithIngredients = dishes.map((dish) => {
-      const dishIngredients = userIngredients.filter(
-        (ingredient) => ingredient.dish_id === dish.id
-      );
-
-      return {
-        ...dish,
-        ingredients: dishIngredients,
-      };
-    });
-
-    return res.json(dishWithIngredients);
   }
 
   async update(req, res) {
@@ -169,6 +109,66 @@ class DishesController {
       console.error("Erro ao atualizar este prato.", error);
       throw new AppError(error.message || "Erro ao atualizar este prato.");
     }
+  }
+
+  async show(req, res) {
+    try {
+      const { dish_id } = req.params;
+
+      const dish = await knex("dishes").where({ id: dish_id }).first();
+      const ingredients = await knex("ingredients")
+        .where({ dish_id })
+        .orderBy("ingredient");
+
+      if (!dish) {
+        throw new AppError("Prato não encontrado.", 404);
+      }
+
+      return res.json({
+        ...dish,
+        ingredients,
+      });
+    } catch (error) {
+      throw new AppError("Erro ao mostrar o prato.");
+    }
+  }
+
+  async index(req, res) {
+    const { name, ingredients } = req.query;
+    const user_id = req.user.id;
+
+    let dishes;
+
+    if (ingredients) {
+      const filterIngredients = ingredients
+        .split(",")
+        .map((ingredient) => ingredient.trim());
+
+      dishes = await knex("ingredients")
+        .select(["dishes.id", "dishes.name"])
+        .whereLike("dishes.name", `%${name}%`)
+        .whereIn("ingredient", filterIngredients)
+        .innerJoin("dishes", "dishes.id", "ingredients.dish_id");
+    } else {
+      dishes = await knex("dishes")
+        .whereLike("name", `%${name}%`)
+        .orderBy("name");
+    }
+
+    const userIngredients = await knex("ingredients").where({ user_id });
+
+    const dishWithIngredients = dishes.map((dish) => {
+      const dishIngredients = userIngredients.filter(
+        (ingredient) => ingredient.dish_id === dish.id
+      );
+
+      return {
+        ...dish,
+        ingredients: dishIngredients,
+      };
+    });
+
+    return res.json(dishWithIngredients);
   }
 }
 

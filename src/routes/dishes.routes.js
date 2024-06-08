@@ -14,6 +14,7 @@ const upload = multer(uploadConfig.MULTER);
 const ensureAuthenticated = require("../middlewares/ensureAuthenticated");
 
 dishesRouter.use(ensureAuthenticated);
+
 dishesRouter.post("/", dishesController.create);
 dishesRouter.get("/:dish_id", dishesController.show);
 dishesRouter.delete("/:dish_id", dishesController.delete);
