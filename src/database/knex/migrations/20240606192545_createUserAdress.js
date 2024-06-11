@@ -1,5 +1,5 @@
 exports.up = (knex) =>
-  knex.schema.createTable("userAdress", (table) => {
+  knex.schema.createTable("user_address", (table) => {
     table.increments("id").primary();
     table
       .integer("user_id")
@@ -13,4 +13,4 @@ exports.up = (knex) =>
     table.timestamp("updated_at").default(knex.fn.now());
   });
 
-exports.down = (knex) => knex.schema.dropTable("userAdress");
+exports.down = (knex) => knex.schema.dropTable("user_address");
