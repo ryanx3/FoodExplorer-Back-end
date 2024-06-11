@@ -12,17 +12,17 @@ function ensureAuthenticated(req, res, next) {
   const [, token] = authorization.split(" ");
 
   try {
-    const { sub: user_id } = verify(token, authConfigs.jwt.secret);
+    const { role, sub: user_id } = verify(token, authConfigs.jwt.secret);
 
     req.user = {
       id: Number(user_id),
+      role,
     };
 
-    return next()
+    return next();
   } catch {
     throw new AppError("JWT Token inválido.", 401);
   }
 }
 
-
-module.exports = ensureAuthenticated
+module.exports = ensureAuthenticated;
