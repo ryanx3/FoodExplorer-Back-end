@@ -12,16 +12,31 @@ const filesController = new FilesController();
 const upload = multer(uploadConfig.MULTER);
 
 const ensureAuthenticated = require("../middlewares/ensureAuthenticated");
+const verifyUserAuthorization = require("../middlewares/verifyUserAuthorization");
 
 dishesRouter.use(ensureAuthenticated);
 
-dishesRouter.post("/", dishesController.create);
 dishesRouter.get("/:dish_id", dishesController.show);
-dishesRouter.delete("/:dish_id", dishesController.delete);
-dishesRouter.put("/:dish_id", dishesController.update);
 dishesRouter.get("/", dishesController.index);
+
+dishesRouter.post(
+  "/",
+  verifyUserAuthorization(["admin"]),
+  dishesController.create
+);
+dishesRouter.delete(
+  "/:dish_id",
+  verifyUserAuthorization(["admin"]),
+  dishesController.delete
+);
+dishesRouter.put(
+  "/:dish_id",
+  verifyUserAuthorization(["admin"]),
+  dishesController.update
+);
 dishesRouter.patch(
   "/:dish_id/image",
+  verifyUserAuthorization(["admin"]),
   upload.single("image"),
   filesController.updateDishImage
 );
