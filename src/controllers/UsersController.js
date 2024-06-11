@@ -16,6 +16,10 @@ class UsersController {
       throw new AppError("Este endereço de email já está cadastrado.", 409);
     }
 
+    if(password.length < 6) {
+      throw new AppError("A sua senha deve conter no mínimo 6 caracteres.")
+    }
+
     const hashedPassword = await hash(password, 8);
 
     database.run(
@@ -53,6 +57,10 @@ class UsersController {
         "Você precisa informar a senha antiga para definir uma nova senha.",
         400
       );
+    }
+
+    if (password.length < 6) {
+      throw new AppError("A sua senha deve conter no mínimo 6 caracteres.");
     }
 
     if (password && old_password) {
