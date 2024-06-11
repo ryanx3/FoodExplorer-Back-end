@@ -134,41 +134,29 @@ class DishesController {
   }
 
   async index(req, res) {
-    const { name, ingredients } = req.query;
-    const user_id = req.user.id;
+    try {
+      const { name } = req.query;
 
-    let dishes;
-
-    if (ingredients) {
-      const filterIngredients = ingredients
-        .split(",")
-        .map((ingredient) => ingredient.trim());
+      let dishes;
 
       dishes = await knex("ingredients")
-        .select(["dishes.id", "dishes.name"])
-        .whereLike("dishes.name", `%${name}%`)
-        .whereIn("ingredient", filterIngredients)
-        .innerJoin("dishes", "dishes.id", "ingredients.dish_id");
-    } else {
-      dishes = await knex("dishes")
-        .whereLike("name", `%${name}%`)
-        .orderBy("name");
+        .innerJoin("dishes", "dishes.id", "ingredients.dish_id")
+        .select("*")
+        .where(function () {
+          this.whereRaw("LOWER(`dishes`.`name`) LIKE ?", [
+            `%${name.toLowerCase()}%`,
+          ]).orWhereRaw("LOWER(`ingredients`.`ingredient`) LIKE ?", [
+            `%${name.toLowerCase()}%`,
+          ]);
+        })
+        .groupBy("dishes.id")
+        .orderBy("dishes.name");
+
+      res.json(dishes);
+    } catch (error) {
+      console.error("Erro ao buscar os pratos:", error);
+      throw new AppError("Erro no servidor ao buscar os pratos.", 500);
     }
-
-    const userIngredients = await knex("ingredients").where({ user_id });
-
-    const dishWithIngredients = dishes.map((dish) => {
-      const dishIngredients = userIngredients.filter(
-        (ingredient) => ingredient.dish_id === dish.id
-      );
-
-      return {
-        ...dish,
-        ingredients: dishIngredients,
-      };
-    });
-
-    return res.json(dishWithIngredients);
   }
 }
 
