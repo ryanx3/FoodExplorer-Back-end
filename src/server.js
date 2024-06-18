@@ -1,22 +1,28 @@
 require("express-async-errors");
 
-const AppError = require("./utils/AppError");
+const routes = require("./routes");
 const express = require("express");
+const AppError = require("./utils/AppError");
+const cookieParser = require("cookie-parser");
+const uploadConfig = require("./configs/upload");
 const app = express();
 
-const cors = require("cors");
+const sqliteConnection = require("./database/sqlite");
+sqliteConnection();
 
-const uploadConfig = require("./configs/upload");
 app.use("/files", express.static(uploadConfig.UPLOAD_FOLDERS));
 
-app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+const cors = require("cors");
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    credentials: true,
+  })
+);
 
-const routes = require("./routes");
 app.use(routes);
-
-const sqliteConnection = require("./database/sqlite");
-sqliteConnection()
 
 app.use((error, req, res, next) => {
   if (error instanceof AppError) {
