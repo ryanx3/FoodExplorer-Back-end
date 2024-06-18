@@ -59,10 +59,6 @@ class UsersController {
       );
     }
 
-    if (password.length < 6) {
-      throw new AppError("A sua senha deve conter no mínimo 6 caracteres.");
-    }
-
     if (password && old_password) {
       const checkPassword = await compare(old_password, user.password);
       if (!checkPassword) {
