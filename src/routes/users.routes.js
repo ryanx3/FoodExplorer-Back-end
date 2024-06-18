@@ -6,8 +6,12 @@ const multer = require("multer");
 
 const UsersController = require("../controllers/UsersController");
 const usersController = new UsersController();
+
 const FilesController = require("../controllers/FilesController");
 const filesController = new FilesController();
+
+const UsersValidatedController = require("../controllers/UsersValidatedController");
+const usersValidatedController = new UsersValidatedController();
 
 const upload = multer(uploadConfig.MULTER);
 const ensureAuthenticated = require("../middlewares/ensureAuthenticated");
@@ -19,6 +23,12 @@ usersRouter.patch(
   ensureAuthenticated,
   upload.single("avatar"),
   filesController.updateUserAvatar
+);
+
+usersRouter.get(
+  "/validated",
+  ensureAuthenticated,
+  usersValidatedController.index
 );
 
 module.exports = usersRouter;
