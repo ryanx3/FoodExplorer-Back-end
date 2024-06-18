@@ -16,7 +16,7 @@ class FavoritesController {
         throw new AppError("Não foi possível favoritar o prato", 401);
       }
 
-      return res.json("Prato favoritado com sucesso!");
+      return res.status(200).json("Prato favoritado com sucesso!");
     } catch (error) {
       console.error(error.message);
       return res.status(500).json("Erro interno do servidor");
